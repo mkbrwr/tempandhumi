@@ -48,8 +48,6 @@ I2C_HandleTypeDef hi2c3;
 
 LTDC_HandleTypeDef hltdc;
 
-SD_HandleTypeDef hsd;
-
 SPI_HandleTypeDef hspi5;
 
 /* USER CODE BEGIN PV */
@@ -63,7 +61,6 @@ static void MX_DMA2D_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_SPI5_Init(void);
-static void MX_SDIO_SD_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -101,12 +98,11 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-//  MX_GPIO_Init();
-//  MX_DMA2D_Init();
-//  MX_I2C3_Init();
-//  MX_LTDC_Init();
-//  MX_SPI5_Init();
-//  MX_SDIO_SD_Init();
+  MX_GPIO_Init();
+  MX_DMA2D_Init();
+  MX_I2C3_Init();
+  MX_LTDC_Init();
+  MX_SPI5_Init();
   /* USER CODE BEGIN 2 */
 
   	 BSP_LED_Init(LED3);
@@ -366,38 +362,6 @@ static void MX_LTDC_Init(void)
 }
 
 /**
-  * @brief SDIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SDIO_SD_Init(void)
-{
-
-  /* USER CODE BEGIN SDIO_Init 0 */
-
-  /* USER CODE END SDIO_Init 0 */
-
-  /* USER CODE BEGIN SDIO_Init 1 */
-
-  /* USER CODE END SDIO_Init 1 */
-  hsd.Instance = SDIO;
-  hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-  hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
-  hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
-  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
-  if (HAL_SD_Init(&hsd) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SDIO_Init 2 */
-
-  /* USER CODE END SDIO_Init 2 */
-
-}
-
-/**
   * @brief SPI5 Initialization Function
   * @param None
   * @retval None
@@ -617,7 +581,7 @@ static void Draw_Menu(void)
   BSP_LCD_Clear(LCD_COLOR_WHITE);
 
   /* Set Black as text color */
-  BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+  BSP_LCD_SetTextColor(LCD_COLOR_MAGENTA);
 
 
   BSP_LCD_SetTextColor(LCD_COLOR_DARKRED);
@@ -625,7 +589,7 @@ static void Draw_Menu(void)
   BSP_LCD_DisplayStringAt(10, 10, (uint8_t *)"Goodbye", LEFT_MODE);
   BSP_LCD_DisplayStringAt(10, 45, (uint8_t *)"World!", LEFT_MODE);
 
-  BSP_LCD_SetTextColor(LCD_COLOR_RED);
+  BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
   BSP_LCD_FillCircle(BSP_LCD_GetXSize()/2, (BSP_LCD_GetYSize()/2), 24);
 }
 
