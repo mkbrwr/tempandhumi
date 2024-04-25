@@ -2049,10 +2049,10 @@ extern "C" {
 /** @defgroup HAL_LTDC_Aliased_Functions HAL LTDC Aliased Functions maintained for legacy purpose
   * @{
   */
-//#define HAL_LTDC_LineEvenCallback HAL_LTDC_LineEventCallback
-//#define HAL_LTDC_Relaod           HAL_LTDC_Reload
-//#define HAL_LTDC_StructInitFromVideoConfig  HAL_LTDCEx_StructInitFromVideoConfig
-//#define HAL_LTDC_StructInitFromAdaptedCommandConfig  HAL_LTDCEx_StructInitFromAdaptedCommandConfig
+#define HAL_LTDC_LineEvenCallback HAL_LTDC_LineEventCallback
+#define HAL_LTDC_Relaod           HAL_LTDC_Reload
+#define HAL_LTDC_StructInitFromVideoConfig  HAL_LTDCEx_StructInitFromVideoConfig
+#define HAL_LTDC_StructInitFromAdaptedCommandConfig  HAL_LTDCEx_StructInitFromAdaptedCommandConfig
 /**
   * @}
   */
