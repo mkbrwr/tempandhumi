@@ -32,6 +32,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+static void Draw_Menu(void);
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -85,8 +87,39 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+//  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+
+  	 BSP_LED_Init(LED3);
+     BSP_LED_Init(LED4);
+
+     /*##-1- LCD Initialization #################################################*/
+     /* Initialize the LCD */
+     BSP_LCD_Init();
+
+     /* Layer2 Init */
+     BSP_LCD_LayerDefaultInit(1, LCD_FRAME_BUFFER_LAYER1);
+     /* Set Foreground Layer */
+     BSP_LCD_SelectLayer(1);
+     /* Clear the LCD */
+     BSP_LCD_Clear(LCD_COLOR_WHITE);
+     BSP_LCD_SetColorKeying(1, LCD_COLOR_WHITE);
+     BSP_LCD_SetLayerVisible(1, DISABLE);
+
+     /* Layer1 Init */
+     BSP_LCD_LayerDefaultInit(0, LCD_FRAME_BUFFER_LAYER0);
+
+     /* Set Foreground Layer */
+     BSP_LCD_SelectLayer(0);
+
+     /* Enable The LCD */
+     BSP_LCD_DisplayOn();
+
+     /* Clear the LCD */
+     BSP_LCD_Clear(LCD_COLOR_WHITE);
+
+     Draw_Menu();
+
 
   /* USER CODE END 2 */
 
@@ -409,6 +442,27 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+static void Draw_Menu(void)
+{
+  /* Set background Layer */
+  BSP_LCD_SelectLayer(0);
+
+  /* Clear the LCD */
+  BSP_LCD_Clear(LCD_COLOR_WHITE);
+
+  /* Set Black as text color */
+  BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+
+
+  BSP_LCD_SetTextColor(LCD_COLOR_DARKRED);
+  BSP_LCD_SetFont(&Font24);
+  BSP_LCD_DisplayStringAt(10, 10, (uint8_t *)"Hello,", LEFT_MODE);
+  BSP_LCD_DisplayStringAt(10, 45, (uint8_t *)"World!", LEFT_MODE);
+
+  BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+  BSP_LCD_FillCircle(BSP_LCD_GetXSize()/2, (BSP_LCD_GetYSize()/2), 24);
+}
 
 /* USER CODE END 4 */
 

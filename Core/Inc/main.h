@@ -28,6 +28,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "stm32f429i_discovery.h"
+#include "stm32f429i_discovery_lcd.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -41,6 +43,10 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+
+#define LCD_FRAME_BUFFER_LAYER0                  (LCD_FRAME_BUFFER+0x130000)
+#define LCD_FRAME_BUFFER_LAYER1                  LCD_FRAME_BUFFER
+#define CONVERTED_FRAME_BUFFER                   (LCD_FRAME_BUFFER+0x260000)
 
 /* USER CODE END EC */
 
