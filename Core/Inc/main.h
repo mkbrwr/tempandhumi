@@ -28,10 +28,11 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "stm32f429i_discovery_lcd.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "stm32f429i_discovery_lcd.h"
 
 /* USER CODE END Includes */
 
