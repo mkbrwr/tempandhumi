@@ -21,18 +21,39 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include <stdlib.h>
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+/* HTU21D commands */
+#define TRIGGER_TEMPERATURE_MEASUREMENT_HOLD_MASTER    0xE3
+#define TRIGGER_HUMIDITY_MEASUREMENT_HOLD_MASTER       0xE5
+#define TRIGGER_TEMPERATURE_MEASUREMENT_NO_HOLD_MASTER 0xF3
+#define TRIGGER_HUMIDITY_MEASUREMENT_NO_HOLD_MASTER    0xF5
+#define WRITE_USER_REGISTER 0xE6
+#define READ_USER_REGISTER  0xE7
+#define SOFT_RESET 0xFE
+
+/* HTU21D I2C address */
+#define HTU21D_DEVICE_ADDRESS 0x80
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-static void Draw_Menu(void);
+static void Draw_UI(void);
+void reset_i2c_bus();
+void check_is_device_ready();
+void reset_sensor();
+
+
+void read_temperature();
+void read_humidity();
 
 /* USER CODE END PD */
 
@@ -51,6 +72,15 @@ LTDC_HandleTypeDef hltdc;
 SPI_HandleTypeDef hspi5;
 
 /* USER CODE BEGIN PV */
+
+HAL_StatusTypeDef HAL_STATUS;
+
+/* HTU21D variables */
+uint8_t HTU21D_user_register_content[1];
+uint8_t HTU21D_measurement_data[3]; /* MSB LSB Checksum */
+
+float g_temp = -1.0;
+float g_humi = -1.0;
 
 /* USER CODE END PV */
 
@@ -133,7 +163,10 @@ int main(void)
      /* Clear the LCD */
      BSP_LCD_Clear(LCD_COLOR_WHITE);
 
-     Draw_Menu();
+//     Draw_Menu();
+
+     check_is_device_ready();
+     reset_sensor();
 
 
   /* USER CODE END 2 */
@@ -142,6 +175,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  read_temperature();
+	  read_humidity();
+	  Draw_UI();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -572,7 +608,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-static void Draw_Menu(void)
+static void Draw_UI(void)
 {
   /* Set background Layer */
   BSP_LCD_SelectLayer(0);
@@ -586,12 +622,116 @@ static void Draw_Menu(void)
 
   BSP_LCD_SetTextColor(LCD_COLOR_DARKRED);
   BSP_LCD_SetFont(&Font24);
-  BSP_LCD_DisplayStringAt(10, 10, (uint8_t *)"Goodbye", LEFT_MODE);
-  BSP_LCD_DisplayStringAt(10, 45, (uint8_t *)"World!", LEFT_MODE);
 
-  BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
-  BSP_LCD_FillCircle(BSP_LCD_GetXSize()/2, (BSP_LCD_GetYSize()/2), 24);
+  int len = snprintf(NULL, 0, "%0.3f C", g_temp);
+  char *s_temp = malloc(len + 1);
+  snprintf(s_temp, len + 1, "%0.3f C", g_temp);
+
+  len = snprintf(NULL, 0, "%0.0f  %%", g_humi);
+  char *s_humi = malloc(len + 1);
+  snprintf(s_humi, len + 1, "%0.0f %%", g_humi);
+
+  BSP_LCD_DisplayStringAt(10, 10, (uint8_t *)"Temperature:", LEFT_MODE);
+  BSP_LCD_DisplayStringAt(10, 40, (uint8_t *)s_temp, LEFT_MODE);
+
+  BSP_LCD_DisplayStringAt(10, 80, (uint8_t *)"Humidity:", LEFT_MODE);
+  BSP_LCD_DisplayStringAt(10, 110, (uint8_t *)s_humi, LEFT_MODE);
+
+//  BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
+//  BSP_LCD_FillCircle(BSP_LCD_GetXSize()/2, (BSP_LCD_GetYSize()/2), 24);
+
+  free(s_temp);
+  free(s_humi);
 }
+
+static uint8_t isBitSet(uint8_t value, uint8_t n) {
+	return (value & (1 << n)) != 0;
+}
+
+static void updateMeasurement(uint8_t *pData)
+{
+	if (isBitSet(pData[1], 1)) {
+		/* bit 1 is set for humidity measurement */
+		uint16_t raw_humi = ((pData[0] << 8) | pData[1]);
+		g_humi = -6 + 125 * raw_humi / 65536;
+	} else {
+		/* it's a temperature measurement */
+		uint16_t raw_temp = ((pData[0] << 8) | pData[1]);
+		g_temp = -46.85 + 175.72 * raw_temp / 65536;
+	}
+}
+
+void check_is_device_ready()
+{
+	HAL_STATUS = HAL_I2C_IsDeviceReady(&hi2c3, HTU21D_DEVICE_ADDRESS, 5, 100);
+	if (HAL_STATUS != HAL_OK )
+	{
+		reset_i2c_bus();
+	}
+}
+
+void reset_i2c_bus()
+ {
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+	/* Reconfigure I2C Pins as GPIO */
+	HAL_I2C_MspDeInit(&hi2c3);
+
+	GPIO_InitStruct.Pin = I2C3_SDA_Pin | I2C3_SCL_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	/* send 9 pulses on SCL line */
+	int pulse_count = 9;
+	while (pulse_count > 0) {
+		HAL_GPIO_WritePin(I2C3_SCL_GPIO_Port, I2C3_SCL_Pin, GPIO_PIN_RESET);
+		HAL_Delay(15);
+		HAL_GPIO_WritePin(I2C3_SCL_GPIO_Port, I2C3_SCL_Pin, GPIO_PIN_SET);
+		HAL_Delay(15);
+		pulse_count -= 1;
+	}
+
+	/* generate stop condition */
+	HAL_GPIO_WritePin(I2C3_SDA_GPIO_Port, I2C3_SDA_Pin, GPIO_PIN_RESET);
+	HAL_Delay(15);
+	HAL_GPIO_WritePin(I2C3_SDA_GPIO_Port, I2C3_SDA_Pin, GPIO_PIN_SET);
+	HAL_Delay(15);
+	HAL_GPIO_WritePin(I2C3_SDA_GPIO_Port, I2C3_SDA_Pin, GPIO_PIN_SET);
+	HAL_Delay(15);
+
+	/* TODO: Reset I2C */
+
+	// tmp do a system reset.
+	// Can't figure out a way how to reset I2C properly
+	// just reconfiguring pins back does not help, HAL stays in HAL_BUSY
+	NVIC_SystemReset();
+ }
+
+void reset_sensor()
+{
+	uint8_t command = SOFT_RESET;
+	HAL_STATUS = HAL_I2C_Master_Transmit(&hi2c3, HTU21D_DEVICE_ADDRESS, &command, 1, HAL_MAX_DELAY);
+	HAL_Delay(15);
+}
+
+void read_temperature()
+{
+	uint8_t command = TRIGGER_TEMPERATURE_MEASUREMENT_HOLD_MASTER;
+	HAL_STATUS = HAL_I2C_Master_Transmit(&hi2c3, HTU21D_DEVICE_ADDRESS, &command, 1, HAL_MAX_DELAY);
+	HAL_STATUS = HAL_I2C_Master_Receive(&hi2c3, HTU21D_DEVICE_ADDRESS, (uint8_t*)HTU21D_measurement_data, 3, HAL_MAX_DELAY);
+	updateMeasurement(HTU21D_measurement_data);
+}
+
+void read_humidity()
+{
+	uint8_t command = TRIGGER_HUMIDITY_MEASUREMENT_HOLD_MASTER;
+	HAL_STATUS = HAL_I2C_Master_Transmit(&hi2c3, HTU21D_DEVICE_ADDRESS, &command, 1, HAL_MAX_DELAY);
+	HAL_STATUS = HAL_I2C_Master_Receive(&hi2c3, HTU21D_DEVICE_ADDRESS, (uint8_t*)HTU21D_measurement_data, 3, HAL_MAX_DELAY);
+	updateMeasurement(HTU21D_measurement_data);
+}
+
 
 /* USER CODE END 4 */
 
