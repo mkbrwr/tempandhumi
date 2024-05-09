@@ -167,11 +167,8 @@ int main(void)
      /* Clear the LCD */
      BSP_LCD_Clear(LCD_COLOR_WHITE);
 
-//     Draw_Menu();
-
      check_is_device_ready();
      reset_sensor();
-
 
   /* USER CODE END 2 */
 
@@ -625,13 +622,13 @@ static void Draw_UI(void)
   BSP_LCD_DisplayStringAt(10, 110, (uint8_t *)s_humi, LEFT_MODE);
 
   /* Draw circle in the bottom left corner */
-  BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
-  BSP_LCD_FillCircle(BSP_LCD_GetXSize() - 12, (BSP_LCD_GetYSize() - 22), 8);
+//  BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+//  BSP_LCD_FillCircle(BSP_LCD_GetXSize() - 12, (BSP_LCD_GetYSize() - 22), 8);
 
   /* Draw build number in bottom left corner */
   BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-  BSP_LCD_SetFont(&Font8);
-  BSP_LCD_DisplayStringAt(BSP_LCD_GetXSize() - 36, BSP_LCD_GetYSize() - 8, (uint8_t *)"Build 1", LEFT_MODE);
+  BSP_LCD_SetFont(&Font12);
+  BSP_LCD_DisplayStringAt(BSP_LCD_GetXSize() - 52, BSP_LCD_GetYSize() - 12, (uint8_t *)"Build 2", LEFT_MODE);
 
   free(s_temp);
   free(s_humi);
