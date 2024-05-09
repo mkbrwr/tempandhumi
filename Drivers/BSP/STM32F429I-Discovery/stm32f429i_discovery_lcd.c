@@ -56,12 +56,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f429i_discovery_lcd.h"
-#include "../../../Utilities/Fonts/fonts.h"
-#include "../../../Utilities/Fonts/font24.c"
-#include "../../../Utilities/Fonts/font20.c"
-#include "../../../Utilities/Fonts/font16.c"
-#include "../../../Utilities/Fonts/font12.c"
-#include "../../../Utilities/Fonts/font8.c"
+#include "../../../Core/Utilities/Fonts/fonts.h"
+#include "../../../Core/Utilities/Fonts/font24.c"
+#include "../../../Core/Utilities/Fonts/font20.c"
+#include "../../../Core/Utilities/Fonts/font16.c"
+#include "../../../Core/Utilities/Fonts/font12.c"
+#include "../../../Core/Utilities/Fonts/font8.c"
 
 /** @addtogroup BSP
   * @{
